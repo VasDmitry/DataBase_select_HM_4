@@ -13,7 +13,7 @@ SELECT song_name, duration
 SELECT compilation_name
   FROM compilations
  WHERE release_year >= '2018-01-01' 
-   AND release_year <= '2020-01-01';
+   AND release_year < '2021-01-01';
 
 -- 4. Исполнители, чьё имя состоит из одного слова.
 SELECT artist_name
@@ -97,9 +97,15 @@ SELECT a.artist_name
         FROM songs s);
 
 -- 4. Названия альбомов, содержащих наименьшее количество треков.
--- Верхние строки это и есть альбомы с минимальным количеством треков.
-  SELECT a.album_name, COUNT(*) 
+  SELECT a.album_name, COUNT(*) AS songs_count
     FROM albums a
     JOIN songs s ON s.album_id = a.album_id
 GROUP BY a.album_id 
-ORDER BY COUNT(*) ASC; 
+  HAVING COUNT(*) = (
+                     SELECT MIN(songs_count_in) 
+                       FROM (
+                             SELECT COUNT(*) AS songs_count_in 
+                               FROM albums a_in
+                               JOIN songs s_in ON s_in.album_id = a_in.album_id
+                           GROUP BY a_in.album_id)
+                    ); 
